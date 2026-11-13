@@ -9,43 +9,37 @@
   </head>
   <body>
     <header>
-      <a href="/">coherence choir <span aria-hidden="true">≋</span></a
-      ><span class="caption">Computer architecture / MESI laboratory</span
-      ><button id="open">Open scenario</button
+      <h1>Coherence Choir</h1>
+      <button id="open">Open scenario</button
       ><input id="file" type="file" accept=".json" hidden />
     </header>
     <main>
-      <div class="intro">
-        <p class="eyebrow">Many copies. One coherent story.</p>
-        <h1>Keep the cores<br /><em>in agreement.</em></h1>
-        <p>
-          Follow the traffic that makes cached data coherent. See which copy is
-          authoritative, and when main memory catches up.
-        </p>
-      </div>
-      <form id="config-form" class="config">
-        <label
-          >Cores<select id="cores">
-            <option>2</option>
-            <option selected>3</option>
-            <option>4</option>
-          </select></label
-        ><label
-          >Slots per core<select id="lines">
-            <option>1</option>
-            <option selected>2</option>
-            <option>4</option>
-          </select></label
-        ><label
-          >Words per block<select id="words">
-            <option>1</option>
-            <option selected>2</option>
-            <option>4</option>
-          </select></label
-        ><button class="primary">Recompute topology</button
-        ><button id="example" type="button">Example trace</button
-        ><button id="clear" type="button">Empty trace</button>
-      </form>
+      <details id="topology">
+        <summary>Topology and trace</summary>
+        <form id="config-form" class="config">
+          <label
+            >Cores<select id="cores">
+              <option>2</option>
+              <option selected>3</option>
+              <option>4</option>
+            </select></label
+          ><label
+            >Slots per core<select id="lines">
+              <option>1</option>
+              <option selected>2</option>
+              <option>4</option>
+            </select></label
+          ><label
+            >Words per block<select id="words">
+              <option>1</option>
+              <option selected>2</option>
+              <option>4</option>
+            </select></label
+          ><button class="primary">Recompute topology</button
+          ><button id="example" type="button">Example trace</button
+          ><button id="clear" type="button">Empty trace</button>
+        </form>
+      </details>
       <p id="status" role="status" aria-live="polite"></p>
       <section id="result" hidden>
         <div class="transport">
@@ -58,7 +52,8 @@
               min="0"
               value="0" /></label
           ><button id="next" aria-label="Next operation">→</button
-          ><span id="step-count"></span>
+          ><span id="step-count"></span
+          ><button id="operation-open">Add operation</button>
         </div>
         <div class="step-title">
           <h2 id="operation-title"></h2>
@@ -77,51 +72,8 @@
         <div id="memory" class="memory"></div>
         <div class="bottom">
           <section>
-            <h2>What happened here?</h2>
+            <h2>Bus events</h2>
             <div id="events" class="events"></div>
-          </section>
-          <section>
-            <h2>Add a processor operation.</h2>
-            <form id="operation-form">
-              <div class="operation-controls">
-                <label>Core<select id="core"></select></label
-                ><label
-                  >Operation<select id="kind">
-                    <option value="read">Read word</option>
-                    <option value="write">Write word</option>
-                    <option value="flush">Flush modified blocks</option>
-                  </select></label
-                >
-              </div>
-              <div class="operation-controls">
-                <label id="address-label"
-                  >Word address<input
-                    id="address"
-                    type="number"
-                    min="0"
-                    value="0"
-                    required /></label
-                ><label id="value-label" hidden
-                  >New value<input
-                    id="value"
-                    type="number"
-                    min="-999999"
-                    max="999999"
-                    value="1"
-                    required
-                /></label>
-              </div>
-              <div class="actions">
-                <button id="append" class="primary">Append operation</button
-                ><button id="undo" type="button" disabled>Undo edit</button>
-              </div>
-            </form>
-            <p id="branch-note" class="hint"></p>
-            <p class="hint">
-              One cache slot holds one whole block. Slot = block number mod
-              slots per core. Writes to different words in one block can still
-              invalidate each other: false sharing.
-            </p>
           </section>
         </div>
         <details>
@@ -179,10 +131,53 @@
           language-level memory-model guarantees.
         </p>
       </details>
-      <footer>
-        <span>Inspect the protocol. Replay the evidence.</span
-        ><span>Local simulation / no hardware access</span>
-      </footer>
     </main>
+    <dialog id="operation-dialog" aria-labelledby="operation-heading">
+      <div class="dialog-head">
+        <h2 id="operation-heading">Processor operation</h2>
+        <button id="operation-close">Close</button>
+      </div>
+      <p id="operation-status" role="status"></p>
+      <form id="operation-form">
+        <div class="operation-controls">
+          <label>Core<select id="core"></select></label
+          ><label
+            >Operation<select id="kind">
+              <option value="read">Read word</option>
+              <option value="write">Write word</option>
+              <option value="flush">Flush modified blocks</option>
+            </select></label
+          >
+        </div>
+        <div class="operation-controls">
+          <label id="address-label"
+            >Word address<input
+              id="address"
+              type="number"
+              min="0"
+              value="0"
+              required /></label
+          ><label id="value-label" hidden
+            >New value<input
+              id="value"
+              type="number"
+              min="-999999"
+              max="999999"
+              value="1"
+              required
+          /></label>
+        </div>
+        <div class="actions">
+          <button id="append" class="primary">Append operation</button
+          ><button id="undo" type="button" disabled>Undo edit</button>
+        </div>
+      </form>
+      <p id="branch-note" class="hint"></p>
+      <p class="hint">
+        One cache slot holds one whole block. Slot = block number mod slots per
+        core. Writes to different words in one block can still invalidate each
+        other: false sharing.
+      </p>
+    </dialog>
   </body>
 </html>

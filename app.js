@@ -4,6 +4,10 @@ let result = null,
   worker = null,
   timer = null,
   history = [];
+function setStatus(text) {
+  $("status").textContent = text;
+  $("operation-status").textContent = text;
+}
 function el(tag, text, cls) {
   const n = document.createElement(tag);
   if (text !== undefined) n.textContent = text;
@@ -20,7 +24,7 @@ function run(raw, remember = true, step = null) {
   try {
     input = validate(raw);
   } catch (error) {
-    $("status").textContent = error.message;
+    setStatus(error.message);
     return;
   }
   stop();
@@ -30,14 +34,13 @@ function run(raw, remember = true, step = null) {
     if (history.length > 30) history.shift();
   }
   $("result").hidden = true;
-  $("status").textContent =
-    "Replaying the trace and checking every coherence invariant…";
+  setStatus("Replaying the trace and checking every coherence invariant…");
   worker = new Worker("./worker.js", { type: "module" });
   worker.onmessage = ({ data }) => {
     worker.terminate();
     worker = null;
     if (data.error) {
-      $("status").textContent = data.error;
+      setStatus(data.error);
       return;
     }
     result = data.result;
@@ -59,15 +62,15 @@ function run(raw, remember = true, step = null) {
     if (Number($("address").value) >= result.input.memory.length)
       $("address").value = 0;
     $("result").hidden = false;
-    $("status").textContent =
-      `Verified ${result.input.operations.length} atomic operations against sequential memory. Every snapshot satisfies ownership, data, and placement invariants.`;
+    setStatus(
+      `${result.input.operations.length} operations · All coherence checks passed.`,
+    );
     render();
   };
   worker.onerror = () => {
     worker?.terminate();
     worker = null;
-    $("status").textContent =
-      "The replay worker could not finish. Reload and retry.";
+    setStatus("The replay worker could not finish. Reload and retry.");
   };
   worker.postMessage(input);
 }
@@ -290,7 +293,7 @@ $("apply").addEventListener("click", () => {
   try {
     run(JSON.parse($("json").value));
   } catch (error) {
-    $("status").textContent = error.message;
+    setStatus(error.message);
   }
 });
 $("save").addEventListener("click", () =>
@@ -345,10 +348,18 @@ $("file").addEventListener("change", async () => {
     if (file.size > 50000) throw Error("Scenario files must be at most 50 KB.");
     run(JSON.parse(await file.text()));
   } catch (error) {
-    $("status").textContent = error.message;
+    setStatus(error.message);
   } finally {
     $("file").value = "";
   }
 });
 changeKind();
 run(example, false, 0);
+
+$("operation-open").addEventListener("click", () => {
+  stop();
+  $("operation-dialog").showModal();
+});
+$("operation-close").addEventListener("click", () =>
+  $("operation-dialog").close(),
+);

@@ -20,7 +20,8 @@ Open http://127.0.0.1:8000. The server binds to loopback and serves only applica
 - Inspect every direct-mapped slot, MESI state, block tag, and cached word. Memory cards identify modified owners and stale values.
 - Follow ordered bus requests, invalidations, interventions, evictions, and writebacks.
 - Change cores, slots, and block size; recompute the same workload to expose false sharing and conflict misses.
-- Append at the current step to branch history; undo up to 30 scenario edits.
+- Open **Add operation** to append at the current step, branch history, or undo up to 30 scenario edits.
+- The main view connects processor cache slots to the shared bus and memory. Topology, traffic accounting, and model details expand on demand.
 - Import/export scenarios, export complete replay evidence, or download cumulative operation traffic as CSV.
 
 The included [example](docs/example.json) has eight operations. With two words per block it produces two invalidations and two BusUpgr requests. With one word per block both counts become zero. Final memory contains 11 at address 0, 9 at address 1, and 42 at address 4.
