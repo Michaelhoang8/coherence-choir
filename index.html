@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Coherence Choir · MESI laboratory</title>
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="app.js"></script>
+  </head>
+  <body>
+    <header>
+      <a href="/">coherence choir <span aria-hidden="true">≋</span></a
+      ><span class="caption">Computer architecture / MESI laboratory</span
+      ><button id="open">Open scenario</button
+      ><input id="file" type="file" accept=".json" hidden />
+    </header>
+    <main>
+      <div class="intro">
+        <p class="eyebrow">Many copies. One coherent story.</p>
+        <h1>Keep the cores<br /><em>in agreement.</em></h1>
+        <p>
+          Follow the traffic that makes cached data coherent. See which copy is
+          authoritative, and when main memory catches up.
+        </p>
+      </div>
+      <form id="config-form" class="config">
+        <label
+          >Cores<select id="cores">
+            <option>2</option>
+            <option selected>3</option>
+            <option>4</option>
+          </select></label
+        ><label
+          >Slots per core<select id="lines">
+            <option>1</option>
+            <option selected>2</option>
+            <option>4</option>
+          </select></label
+        ><label
+          >Words per block<select id="words">
+            <option>1</option>
+            <option selected>2</option>
+            <option>4</option>
+          </select></label
+        ><button class="primary">Recompute topology</button
+        ><button id="example" type="button">Example trace</button
+        ><button id="clear" type="button">Empty trace</button>
+      </form>
+      <p id="status" role="status" aria-live="polite"></p>
+      <section id="result" hidden>
+        <div class="transport">
+          <button id="play">Play</button
+          ><button id="previous" aria-label="Previous operation">←</button
+          ><label
+            >History step<input
+              id="step"
+              type="range"
+              min="0"
+              value="0" /></label
+          ><button id="next" aria-label="Next operation">→</button
+          ><span id="step-count"></span>
+        </div>
+        <div class="step-title">
+          <h2 id="operation-title"></h2>
+          <span id="invariant">Coherence invariants verified</span>
+        </div>
+        <div id="caches" class="caches"></div>
+        <div class="bus">
+          <span aria-hidden="true"></span>
+          <p>Shared snooping bus · atomic operations in the displayed order</p>
+          <span aria-hidden="true"></span>
+        </div>
+        <div class="memory-heading">
+          <h2>Main memory</h2>
+          <span id="memory-note"></span>
+        </div>
+        <div id="memory" class="memory"></div>
+        <div class="bottom">
+          <section>
+            <h2>What happened here?</h2>
+            <div id="events" class="events"></div>
+          </section>
+          <section>
+            <h2>Add a processor operation.</h2>
+            <form id="operation-form">
+              <div class="operation-controls">
+                <label>Core<select id="core"></select></label
+                ><label
+                  >Operation<select id="kind">
+                    <option value="read">Read word</option>
+                    <option value="write">Write word</option>
+                    <option value="flush">Flush modified blocks</option>
+                  </select></label
+                >
+              </div>
+              <div class="operation-controls">
+                <label id="address-label"
+                  >Word address<input
+                    id="address"
+                    type="number"
+                    min="0"
+                    value="0"
+                    required /></label
+                ><label id="value-label" hidden
+                  >New value<input
+                    id="value"
+                    type="number"
+                    min="-999999"
+                    max="999999"
+                    value="1"
+                    required
+                /></label>
+              </div>
+              <div class="actions">
+                <button id="append" class="primary">Append operation</button
+                ><button id="undo" type="button" disabled>Undo edit</button>
+              </div>
+            </form>
+            <p id="branch-note" class="hint"></p>
+            <p class="hint">
+              One cache slot holds one whole block. Slot = block number mod
+              slots per core. Writes to different words in one block can still
+              invalidate each other: false sharing.
+            </p>
+          </section>
+        </div>
+        <details>
+          <summary>Traffic accounting</summary>
+          <div id="stats" class="stats"></div>
+          <p class="hint">
+            BusRd, BusRdX, and BusUpgr count coherence requests. Writebacks
+            count whole-block data publications separately. Hits/misses count
+            processor reads/writes, not explicit flush commands.
+          </p>
+        </details>
+        <div class="exports">
+          <button id="save">Save scenario</button
+          ><button id="export">Export replay evidence</button
+          ><button id="csv">Export operation CSV</button>
+        </div>
+      </section>
+      <details>
+        <summary>Edit initial memory &amp; trace JSON</summary>
+        <p class="hint">
+          Use cores, lines, words, memory, and operations. Memory is an array of
+          4–32 integer words, divisible by the block size. At most 200
+          read/write/flush operations.
+        </p>
+        <textarea
+          id="json"
+          rows="14"
+          maxlength="60000"
+          spellcheck="false"
+        ></textarea
+        ><button id="apply">Apply JSON scenario</button>
+      </details>
+      <details>
+        <summary>States &amp; model boundaries</summary>
+        <div class="state-guide">
+          <p>
+            <b>M / Modified</b> — this core owns the only valid copy; memory may
+            be stale.
+          </p>
+          <p>
+            <b>E / Exclusive</b> — this core owns the only valid copy; memory is
+            current.
+          </p>
+          <p><b>S / Shared</b> — clean data, possibly held by other cores.</p>
+          <p>
+            <b>I / Invalid</b> — the retained tag/data cannot satisfy a read.
+          </p>
+        </div>
+        <p class="hint">
+          This is a simplified atomic snooping MESI model with direct-mapped,
+          write-back, write-allocate caches. Modified interventions publish the
+          block to memory before sharing or transfer. Flush changes M to E and
+          retains the clean copy. There are no races, transient states, store
+          buffers, speculative execution, multilevel caches, timings, or
+          language-level memory-model guarantees.
+        </p>
+      </details>
+      <footer>
+        <span>Inspect the protocol. Replay the evidence.</span
+        ><span>Local simulation / no hardware access</span>
+      </footer>
+    </main>
+  </body>
+</html>

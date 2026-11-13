@@ -1,0 +1,68 @@
+{
+  "cores": 3,
+  "lines": 2,
+  "words": 2,
+  "memory": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "operations": [
+    {
+      "kind": "read",
+      "core": 0,
+      "address": 0
+    },
+    {
+      "kind": "write",
+      "core": 0,
+      "address": 0,
+      "value": 7
+    },
+    {
+      "kind": "read",
+      "core": 1,
+      "address": 1
+    },
+    {
+      "kind": "write",
+      "core": 1,
+      "address": 1,
+      "value": 9
+    },
+    {
+      "kind": "read",
+      "core": 0,
+      "address": 0
+    },
+    {
+      "kind": "write",
+      "core": 0,
+      "address": 0,
+      "value": 11
+    },
+    {
+      "kind": "write",
+      "core": 0,
+      "address": 4,
+      "value": 42
+    },
+    {
+      "kind": "flush",
+      "core": 0
+    }
+  ]
+}
